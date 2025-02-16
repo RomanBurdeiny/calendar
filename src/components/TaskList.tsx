@@ -12,14 +12,16 @@ type TaskType = {
   date: string;
 };
 
-const TaskList: React.FC = () => {
+const TaskList = () => {
   const [tasks, setTasks] = useState<TaskType[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingTask, setEditingTask] = useState<TaskType | null>(null);
-  const [editedTitle, setEditedTitle] = useState<string>("");
-  const [editedDescription, setEditedDescription] = useState<string>("");
-  const [editedCompleted, setEditedCompleted] = useState<boolean>(false);
+  const [editedTitle, setEditedTitle] = useState("");
+  const [editedDescription, setEditedDescription] = useState("");
+  const [editedCompleted, setEditedCompleted] = useState(false);
+  const [editedDate, setEditedDate] = useState(format(new Date(), "yyyy-MM-dd"));
 
+  // ✅ Загружаем задачи при старте
   useEffect(() => {
     const savedTasks = localStorage.getItem("tasks");
     if (savedTasks) {
@@ -27,18 +29,23 @@ const TaskList: React.FC = () => {
         const parsedTasks = JSON.parse(savedTasks);
         if (Array.isArray(parsedTasks)) {
           setTasks(parsedTasks);
+        } else {
+          console.warn("Ошибка: данные в localStorage не массив, сбрасываем...");
+          localStorage.removeItem("tasks");
         }
       } catch (error) {
-        console.error("Ошибка при чтении данных из localStorage:", error);
+        console.error("Ошибка загрузки данных из localStorage:", error);
+        localStorage.removeItem("tasks");
       }
     }
   }, []);
 
+  // ✅ Сохраняем задачи при каждом изменении
   useEffect(() => {
-    if (tasks.length === 0) {
-      localStorage.removeItem("tasks");
-    } else {
+    if (tasks.length > 0) {
       localStorage.setItem("tasks", JSON.stringify(tasks));
+    } else {
+      localStorage.removeItem("tasks"); // Удаляем, если задач нет
     }
   }, [tasks]);
 
@@ -55,36 +62,30 @@ const TaskList: React.FC = () => {
     setEditedTitle(task.title);
     setEditedDescription(task.description);
     setEditedCompleted(task.completed);
+    setEditedDate(task.date);
     setIsModalOpen(true);
   };
 
   const handleSaveTask = () => {
-    if (!editedTitle.trim()) return; // Валидация заголовка
+    if (!editedTitle.trim()) return;
 
     if (editingTask) {
       setTasks((prevTasks) =>
         prevTasks.map((task) =>
           task.id === editingTask.id
-            ? {
-                ...task,
-                title: editedTitle,
-                description: editedDescription,
-                completed: editedCompleted,
-              }
+            ? { ...task, title: editedTitle, description: editedDescription, completed: editedCompleted, date: editedDate }
             : task
         )
       );
     } else {
-      setTasks([
-        ...tasks,
-        {
-          id: Date.now(),
-          title: editedTitle,
-          description: editedDescription,
-          completed: editedCompleted,
-          date: format(new Date(), "yyyy-MM-dd"),
-        },
-      ]);
+      const newTask: TaskType = {
+        id: Date.now(),
+        title: editedTitle,
+        description: editedDescription,
+        completed: editedCompleted,
+        date: editedDate,
+      };
+      setTasks([...tasks, newTask]);
     }
     closeModal();
   };
@@ -98,6 +99,7 @@ const TaskList: React.FC = () => {
     setEditedTitle("");
     setEditedDescription("");
     setEditedCompleted(false);
+    setEditedDate(format(new Date(), "yyyy-MM-dd"));
     setIsModalOpen(true);
   };
 
@@ -106,6 +108,7 @@ const TaskList: React.FC = () => {
     setEditedTitle("");
     setEditedDescription("");
     setEditedCompleted(false);
+    setEditedDate(format(new Date(), "yyyy-MM-dd"));
     setIsModalOpen(false);
   };
 
@@ -138,9 +141,11 @@ const TaskList: React.FC = () => {
         title={editedTitle}
         description={editedDescription}
         completed={editedCompleted}
+        date={editedDate}
         onTitleChange={(e) => setEditedTitle(e.target.value)}
         onDescriptionChange={(e) => setEditedDescription(e.target.value)}
         onCompletedChange={() => setEditedCompleted(!editedCompleted)}
+        onDateChange={setEditedDate}
         onClose={closeModal}
         onSave={handleSaveTask}
       />
