@@ -1,7 +1,8 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
+import { useForm, FormProvider } from "react-hook-form";
 import Task from "./Task";
 import TaskModal from "./TaskModal";
-import { format } from "date-fns";
+import { format, addDays, subDays } from "date-fns";
 import Button from "./Button";
 
 type TaskType = {
@@ -15,13 +16,22 @@ type TaskType = {
 const TaskList = () => {
   const [tasks, setTasks] = useState<TaskType[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editingTask, setEditingTask] = useState<TaskType | null>(null);
-  const [editedTitle, setEditedTitle] = useState("");
-  const [editedDescription, setEditedDescription] = useState("");
-  const [editedCompleted, setEditedCompleted] = useState(false);
-  const [editedDate, setEditedDate] = useState(format(new Date(), "yyyy-MM-dd"));
+  const [selectedDate, setSelectedDate] = useState(format(new Date(), "yyyy-MM-dd"));
+  const [dates, setDates] = useState(
+    Array.from({ length: 14 }, (_, i) => format(addDays(subDays(new Date(), 7), i), "yyyy-MM-dd"))
+  );
 
-  // ✅ Загружаем задачи при старте
+  const scrollRef = useRef<HTMLDivElement | null>(null);
+
+  const formMethods = useForm({
+    defaultValues: {
+      title: "",
+      description: "",
+      completed: false,
+      date: format(new Date(), "yyyy-MM-dd"),
+    },
+  });
+
   useEffect(() => {
     const savedTasks = localStorage.getItem("tasks");
     if (savedTasks) {
@@ -30,7 +40,6 @@ const TaskList = () => {
         if (Array.isArray(parsedTasks)) {
           setTasks(parsedTasks);
         } else {
-          console.warn("Ошибка: данные в localStorage не массив, сбрасываем...");
           localStorage.removeItem("tasks");
         }
       } catch (error) {
@@ -40,93 +49,93 @@ const TaskList = () => {
     }
   }, []);
 
-  // ✅ Сохраняем задачи при каждом изменении
   useEffect(() => {
     if (tasks.length > 0) {
       localStorage.setItem("tasks", JSON.stringify(tasks));
     } else {
-      localStorage.removeItem("tasks"); // Удаляем, если задач нет
+      localStorage.removeItem("tasks");
     }
   }, [tasks]);
 
-  const handleToggleComplete = (id: number) => {
-    setTasks((prevTasks) =>
-      prevTasks.map((task) =>
-        task.id === id ? { ...task, completed: !task.completed } : task
-      )
-    );
-  };
-
-  const handleEditTask = (task: TaskType) => {
-    setEditingTask(task);
-    setEditedTitle(task.title);
-    setEditedDescription(task.description);
-    setEditedCompleted(task.completed);
-    setEditedDate(task.date);
-    setIsModalOpen(true);
-  };
-
-  const handleSaveTask = () => {
-    if (!editedTitle.trim()) return;
-
-    if (editingTask) {
-      setTasks((prevTasks) =>
-        prevTasks.map((task) =>
-          task.id === editingTask.id
-            ? { ...task, title: editedTitle, description: editedDescription, completed: editedCompleted, date: editedDate }
-            : task
-        )
-      );
-    } else {
-      const newTask: TaskType = {
-        id: Date.now(),
-        title: editedTitle,
-        description: editedDescription,
-        completed: editedCompleted,
-        date: editedDate,
-      };
-      setTasks([...tasks, newTask]);
+  const handleScroll = useCallback(() => {
+    if (scrollRef.current) {
+      const { scrollLeft, scrollWidth, clientWidth } = scrollRef.current;
+      if (scrollLeft + clientWidth >= scrollWidth - 10) {
+        const newDates = Array.from({ length: 7 }, (_, i) => format(addDays(new Date(dates[dates.length - 1]), i + 1), "yyyy-MM-dd"));
+        setDates((prev) => [...prev, ...newDates]);
+      }
     }
-    closeModal();
-  };
+  }, [dates]);
 
-  const handleDeleteTask = (id: number) => {
-    setTasks((prevTasks) => prevTasks.filter((task) => task.id !== id));
-  };
+  useEffect(() => {
+    const currentRef = scrollRef.current;
+    if (currentRef) {
+      currentRef.addEventListener("scroll", handleScroll);
+      currentRef.addEventListener("wheel", (e) => {
+        e.preventDefault();
+        currentRef.scrollLeft += e.deltaY;
+      });
+    }
+    return () => {
+      if (currentRef) {
+        currentRef.removeEventListener("scroll", handleScroll);
+        currentRef.removeEventListener("wheel", (e) => {
+          e.preventDefault();
+          currentRef.scrollLeft += e.deltaY;
+        });
+      }
+    };
+  }, [handleScroll]);
 
   const handleAddTask = () => {
-    setEditingTask(null);
-    setEditedTitle("");
-    setEditedDescription("");
-    setEditedCompleted(false);
-    setEditedDate(format(new Date(), "yyyy-MM-dd"));
+    formMethods.reset({
+      title: "",
+      description: "",
+      completed: false,
+      date: format(new Date(), "yyyy-MM-dd"),
+    });
     setIsModalOpen(true);
   };
 
   const closeModal = () => {
-    setEditingTask(null);
-    setEditedTitle("");
-    setEditedDescription("");
-    setEditedCompleted(false);
-    setEditedDate(format(new Date(), "yyyy-MM-dd"));
     setIsModalOpen(false);
   };
 
+  const filteredTasks = tasks.filter((task) => task.date === selectedDate);
+
   return (
     <div className="p-6 bg-gray-100 min-h-screen flex flex-col items-center">
-      <h1 className="text-2xl font-bold text-black mb-6">Список задач</h1>
-
-      {tasks.length === 0 ? (
-        <p className="text-gray-500 text-lg mt-4">Список задач пуст</p>
+      <h1 className="text-2xl font-bold text-black mb-4">Список задач</h1>
+      <div ref={scrollRef} className="w-full max-w-2xl overflow-x-auto whitespace-nowrap flex gap-2 p-2 border-b border-gray-300 scrollbar-hide">
+        {dates.map((date) => (
+          <button
+            key={date}
+            onClick={() => setSelectedDate(date)}
+            className={`px-4 py-2 rounded text-sm transition ${
+              selectedDate === date
+                ? "bg-gray-400 text-black font-bold border border-gray-700 shadow-lg" // ✅ Подсветка выбранной даты
+                : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+            }`}
+          >
+            {date}
+          </button>
+        ))}
+      </div>
+      {filteredTasks.length === 0 ? (
+        <p className="text-gray-500 text-lg mt-4">На этот день задач нет</p>
       ) : (
-        <div className="w-full max-w-2xl">
-          {tasks.map((task) => (
+        <div className="w-full max-w-2xl mt-4">
+          {filteredTasks.map((task) => (
             <Task
               key={task.id}
               {...task}
-              onEdit={() => handleEditTask(task)}
-              onDelete={() => handleDeleteTask(task.id)}
-              onToggleComplete={() => handleToggleComplete(task.id)}
+              onEdit={() => console.log("Edit task", task)}
+              onDelete={() => setTasks((prev) => prev.filter((t) => t.id !== task.id))}
+              onToggleComplete={() =>
+                setTasks((prev) =>
+                  prev.map((t) => (t.id === task.id ? { ...t, completed: !t.completed } : t))
+                )
+              }
             />
           ))}
         </div>
@@ -136,19 +145,9 @@ const TaskList = () => {
         Добавить задачу
       </Button>
 
-      <TaskModal
-        isOpen={isModalOpen}
-        title={editedTitle}
-        description={editedDescription}
-        completed={editedCompleted}
-        date={editedDate}
-        onTitleChange={(e) => setEditedTitle(e.target.value)}
-        onDescriptionChange={(e) => setEditedDescription(e.target.value)}
-        onCompletedChange={() => setEditedCompleted(!editedCompleted)}
-        onDateChange={setEditedDate}
-        onClose={closeModal}
-        onSave={handleSaveTask}
-      />
+      <FormProvider {...formMethods}>
+        <TaskModal isOpen={isModalOpen} onClose={closeModal} onSave={formMethods.handleSubmit(() => {})} />
+      </FormProvider>
     </div>
   );
 };
