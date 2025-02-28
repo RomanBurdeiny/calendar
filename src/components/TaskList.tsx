@@ -20,8 +20,10 @@ const TaskList = () => {
   const [dates, setDates] = useState(
     Array.from({ length: 14 }, (_, i) => format(addDays(subDays(new Date(), 7), i), "yyyy-MM-dd"))
   );
+  const [editingTask, setEditingTask] = useState<TaskType | null>(null);
 
   const scrollRef = useRef<HTMLDivElement | null>(null);
+  const selectedDateRef = useRef<HTMLButtonElement | null>(null);
 
   const formMethods = useForm({
     defaultValues: {
@@ -55,6 +57,7 @@ const TaskList = () => {
     } else {
       localStorage.removeItem("tasks");
     }
+    console.log("Текущие задачи", tasks);
   }, [tasks]);
 
   const handleScroll = useCallback(() => {
@@ -66,6 +69,12 @@ const TaskList = () => {
       }
     }
   }, [dates]);
+
+  useEffect(() => {
+    if (selectedDateRef.current) {
+      selectedDateRef.current.scrollIntoView({ behavior: "smooth", inline: "center" });
+    }
+  }, []);
 
   useEffect(() => {
     const currentRef = scrollRef.current;
@@ -88,17 +97,46 @@ const TaskList = () => {
   }, [handleScroll]);
 
   const handleAddTask = () => {
+    setEditingTask(null);
     formMethods.reset({
       title: "",
       description: "",
       completed: false,
-      date: format(new Date(), "yyyy-MM-dd"),
+      date: selectedDate,
     });
     setIsModalOpen(true);
   };
 
+  const handleEditTask = (task: TaskType) => {
+    setEditingTask(task);
+    formMethods.reset({
+      title: task.title,
+      description: task.description,
+      completed: task.completed,
+      date: task.date,
+    });
+    setIsModalOpen(true);
+  };
+
+  const handleSaveTask = (taskData: { title: string; description: string; completed: boolean; date: string }) => {
+    if (editingTask) {
+      setTasks((prevTasks) =>
+        prevTasks.map((task) => (task.id === editingTask.id ? { ...task, ...taskData } : task))
+      );
+    } else {
+      const newTask: TaskType = {
+        id: Date.now(),
+        ...taskData,
+      };
+      setTasks((prevTasks) => [...prevTasks, newTask]);
+    }
+    setIsModalOpen(false);
+    setEditingTask(null);
+  };
+
   const closeModal = () => {
     setIsModalOpen(false);
+    setEditingTask(null);
   };
 
   const filteredTasks = tasks.filter((task) => task.date === selectedDate);
@@ -106,21 +144,26 @@ const TaskList = () => {
   return (
     <div className="p-6 bg-gray-100 min-h-screen flex flex-col items-center">
       <h1 className="text-2xl font-bold text-black mb-4">Список задач</h1>
+
       <div ref={scrollRef} className="w-full max-w-2xl overflow-x-auto whitespace-nowrap flex gap-2 p-2 border-b border-gray-300 scrollbar-hide">
-        {dates.map((date) => (
-          <button
-            key={date}
-            onClick={() => setSelectedDate(date)}
-            className={`px-4 py-2 rounded text-sm transition ${
-              selectedDate === date
-                ? "bg-gray-400 text-black font-bold border border-gray-700 shadow-lg" // ✅ Подсветка выбранной даты
-                : "bg-gray-200 text-gray-700 hover:bg-gray-300"
-            }`}
-          >
-            {date}
-          </button>
-        ))}
+        {dates.map((date) => {
+          const hasTasks = tasks.some((task) => task.date === date);
+          return (
+            <button
+              key={date}
+              ref={date === selectedDate ? selectedDateRef : null}
+              onClick={() => setSelectedDate(date)}
+              className={`relative px-4 py-2 rounded text-sm transition flex items-center gap-2 ${
+                selectedDate === date ? "bg-gray-400 text-black font-bold border border-gray-700 shadow-lg" : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+              }`}
+            >
+              {date}
+              {hasTasks && <span className="absolute right-1 top-1 w-2.5 h-2.5 bg-orange-500 rounded-full"></span>}
+            </button>
+          );
+        })}
       </div>
+
       {filteredTasks.length === 0 ? (
         <p className="text-gray-500 text-lg mt-4">На этот день задач нет</p>
       ) : (
@@ -129,7 +172,7 @@ const TaskList = () => {
             <Task
               key={task.id}
               {...task}
-              onEdit={() => console.log("Edit task", task)}
+              onEdit={() => handleEditTask(task)}
               onDelete={() => setTasks((prev) => prev.filter((t) => t.id !== task.id))}
               onToggleComplete={() =>
                 setTasks((prev) =>
@@ -146,7 +189,7 @@ const TaskList = () => {
       </Button>
 
       <FormProvider {...formMethods}>
-        <TaskModal isOpen={isModalOpen} onClose={closeModal} onSave={formMethods.handleSubmit(() => {})} />
+        <TaskModal isOpen={isModalOpen} onClose={closeModal} onSave={handleSaveTask} />
       </FormProvider>
     </div>
   );

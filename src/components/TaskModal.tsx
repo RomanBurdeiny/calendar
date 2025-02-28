@@ -2,18 +2,34 @@ import { Controller, useFormContext } from "react-hook-form";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import Button from "./Button";
-import ToggleSwitch from "./ToggleSwitch"; // ✅ Вернул импорт ToggleSwitch
-
+import ToggleSwitch from "./ToggleSwitch";
 type TaskModalProps = {
   isOpen: boolean;
   onClose: () => void;
-  onSave: () => void;
+  onSave: (task: { title: string; description: string; completed: boolean; date: string }) => void;
 };
 
 const TaskModal: React.FC<TaskModalProps> = ({ isOpen, onClose, onSave }) => {
-  const { handleSubmit, control } = useFormContext();
+  const { handleSubmit, control, reset, watch } = useFormContext();
 
   if (!isOpen) return null;
+
+  const handleSave = () => {
+    const taskData = {
+      title: watch("title"),
+      description: watch("description"),
+      completed: watch("completed"),
+      date: watch("date"),
+    };
+    if (!taskData.title.trim()) {
+      alert("Заголовок не может быть пустым!");
+      return;
+    }
+
+    onSave(taskData);
+    reset();
+    onClose();
+  };
 
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-black/50 backdrop-blur-sm z-50">
@@ -61,7 +77,7 @@ const TaskModal: React.FC<TaskModalProps> = ({ isOpen, onClose, onSave }) => {
 
         <div className="flex justify-end space-x-4">
           <Button onClick={onClose} className="bg-gray-200">Отмена</Button>
-          <Button onClick={handleSubmit(onSave)} className="bg-green-200">Сохранить</Button>
+          <Button onClick={handleSubmit(handleSave)} className="bg-green-200">Сохранить</Button>
         </div>
       </div>
     </div>
