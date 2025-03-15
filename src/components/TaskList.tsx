@@ -4,22 +4,22 @@ import Task from "./Task";
 import TaskModal from "./TaskModal";
 import { format, addDays, subDays } from "date-fns";
 import Button from "./Button";
+import {TaskType} from "./types"
+import Header from "./Header";
 
-type TaskType = {
-  id: number;
-  title: string;
-  description: string;
-  completed: boolean;
-  date: string;
-};
+// type TaskType = {
+//   id: number;
+//   title: string;
+//   description: string;
+//   completed: boolean;
+//   date: string; // Дата хранится в формате "yyyy-MM-dd" в задачах
+// };
 
 const TaskList = () => {
   const [tasks, setTasks] = useState<TaskType[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [selectedDate, setSelectedDate] = useState(format(new Date(), "yyyy-MM-dd"));
-  const [dates, setDates] = useState(
-    Array.from({ length: 14 }, (_, i) => format(addDays(subDays(new Date(), 7), i), "yyyy-MM-dd"))
-  );
+  const [selectedDate, setSelectedDate] = useState<Date>(new Date());
+  const [dates, setDates] = useState<Date[]>(Array.from({ length: 14 }, (_, i) => addDays(subDays(new Date(), 7), i)));
   const [editingTask, setEditingTask] = useState<TaskType | null>(null);
 
   const scrollRef = useRef<HTMLDivElement | null>(null);
@@ -30,7 +30,7 @@ const TaskList = () => {
       title: "",
       description: "",
       completed: false,
-      date: format(new Date(), "yyyy-MM-dd"),
+      date: format(new Date(), "yyyy-MM-dd"), // Дата хранится в "yyyy-MM-dd"
     },
   });
 
@@ -64,7 +64,8 @@ const TaskList = () => {
     if (scrollRef.current) {
       const { scrollLeft, scrollWidth, clientWidth } = scrollRef.current;
       if (scrollLeft + clientWidth >= scrollWidth - 10) {
-        const newDates = Array.from({ length: 7 }, (_, i) => format(addDays(new Date(dates[dates.length - 1]), i + 1), "yyyy-MM-dd"));
+        const lastDate = dates[dates.length - 1]; // Берем последнюю дату
+        const newDates = Array.from({ length: 7 }, (_, i) => addDays(lastDate, i + 1));
         setDates((prev) => [...prev, ...newDates]);
       }
     }
@@ -72,9 +73,9 @@ const TaskList = () => {
 
   useEffect(() => {
     if (selectedDateRef.current) {
-      selectedDateRef.current.scrollIntoView({ behavior: "smooth", inline: "center" });
+      selectedDateRef.current.scrollIntoView({ behavior: "smooth", block: "center", inline: "center" });
     }
-  }, []);
+  }, [selectedDate]);
 
   useEffect(() => {
     const currentRef = scrollRef.current;
@@ -102,7 +103,7 @@ const TaskList = () => {
       title: "",
       description: "",
       completed: false,
-      date: selectedDate,
+      date: format(selectedDate, "yyyy-MM-dd"),
     });
     setIsModalOpen(true);
   };
@@ -139,25 +140,30 @@ const TaskList = () => {
     setEditingTask(null);
   };
 
-  const filteredTasks = tasks.filter((task) => task.date === selectedDate);
+  const filteredTasks = tasks.filter((task) => task.date === format(selectedDate, "yyyy-MM-dd"));
+  const [isDarkMode, setIsDarkMode] = useState(false);
 
+  const toggleDarkMode = () => setIsDarkMode((prev) => !prev);
+  
   return (
-    <div className="p-6 bg-gray-100 min-h-screen flex flex-col items-center">
+    <div className="dark:bg-black bg-gray-100 min-h-screen flex flex-col items-center">
+     <Header isDarkMode={isDarkMode} toggleDarkMode={toggleDarkMode}/>
       <h1 className="text-2xl font-bold text-black mb-4">Список задач</h1>
 
       <div ref={scrollRef} className="w-full max-w-2xl overflow-x-auto whitespace-nowrap flex gap-2 p-2 border-b border-gray-300 scrollbar-hide">
         {dates.map((date) => {
-          const hasTasks = tasks.some((task) => task.date === date);
+          const formattedDate = format(date, "E dd"); // Форматируем дату перед рендерингом
+          const hasTasks = tasks.some((task) => task.date === format(date, "yyyy-MM-dd"));
           return (
             <button
-              key={date}
-              ref={date === selectedDate ? selectedDateRef : null}
+              key={formattedDate}
+              ref={format(selectedDate, "E dd") === formattedDate ? selectedDateRef : null}
               onClick={() => setSelectedDate(date)}
               className={`relative px-4 py-2 rounded text-sm transition flex items-center gap-2 ${
-                selectedDate === date ? "bg-gray-400 text-black font-bold border border-gray-700 shadow-lg" : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                format(selectedDate, "E dd") === formattedDate ? "bg-gray-400 text-black font-bold border border-gray-700 shadow-lg" : "bg-gray-200 text-gray-700 hover:bg-gray-300"
               }`}
             >
-              {date}
+              {formattedDate}
               {hasTasks && <span className="absolute right-1 top-1 w-2.5 h-2.5 bg-orange-500 rounded-full"></span>}
             </button>
           );

@@ -6,7 +6,12 @@ import ToggleSwitch from "./ToggleSwitch";
 type TaskModalProps = {
   isOpen: boolean;
   onClose: () => void;
-  onSave: (task: { title: string; description: string; completed: boolean; date: string }) => void;
+  onSave: (task: { 
+    title: string;
+    description: string;
+    completed: boolean;
+    date: string 
+  }) => void;
 };
 
 const TaskModal: React.FC<TaskModalProps> = ({ isOpen, onClose, onSave }) => {
@@ -69,7 +74,7 @@ const TaskModal: React.FC<TaskModalProps> = ({ isOpen, onClose, onSave }) => {
           control={control}
           render={({ field }) => (
             <div className="mb-4 flex items-center gap-2">
-              <ToggleSwitch checked={field.value} onChange={field.onChange} />
+              <ToggleSwitch checked={field.value} onChange={field.onChange} children/>
               <span className="text-gray-700">Задача выполнена</span>
             </div>
           )}
