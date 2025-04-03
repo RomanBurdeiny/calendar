@@ -3,18 +3,9 @@ import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import Button from "./Button";
 import ToggleSwitch from "./ToggleSwitch";
-type TaskModalProps = {
-  isOpen: boolean;
-  onClose: () => void;
-  onSave: (task: { 
-    title: string;
-    description: string;
-    completed: boolean;
-    date: string 
-  }) => void;
-};
+import { TaskModalProps } from "./types";
 
-const TaskModal: React.FC<TaskModalProps> = ({ isOpen, onClose, onSave }) => {
+const TaskModal: React.FC<TaskModalProps> = ({ isOpen, onClose, onSave, isDarkMode }) => {
   const { handleSubmit, control, reset, watch } = useFormContext();
 
   if (!isOpen) return null;
@@ -37,9 +28,21 @@ const TaskModal: React.FC<TaskModalProps> = ({ isOpen, onClose, onSave }) => {
   };
 
   return (
-    <div className="fixed inset-0 flex items-center justify-center bg-black/50 backdrop-blur-sm z-50">
-      <div className="bg-white p-6 w-96 rounded-lg shadow-xl">
-        <h2 className="text-xl font-bold mb-4 text-center">Добавить задачу</h2>
+    <div 
+    className={`fixed inset-0 flex items-center justify-center bg-black/50 backdrop-blur-sm z-50 
+    ${isDarkMode 
+    ? 'text-white' 
+    :'text-black'}`}>
+      <div 
+      className={`p-6 w-96 rounded-lg shadow-xl  
+      ${isDarkMode 
+      ? ' bg-gray-900 text-white' 
+      :'bg-white text-black'}`}>
+        <h2 
+        className={`text-xl font-bold mb-4 text-center  
+        ${isDarkMode ? 'text-white' 
+        :'text-black'}`}>Добавить задачу
+        </h2>
 
         <Controller
           name="title"
@@ -74,15 +77,17 @@ const TaskModal: React.FC<TaskModalProps> = ({ isOpen, onClose, onSave }) => {
           control={control}
           render={({ field }) => (
             <div className="mb-4 flex items-center gap-2">
-              <ToggleSwitch checked={field.value} onChange={field.onChange} children/>
+              <ToggleSwitch checked={field.value} onChange={field.onChange} children isDarkMode/>
               <span className="text-gray-700">Задача выполнена</span>
             </div>
           )}
         />
 
         <div className="flex justify-end space-x-4">
-          <Button onClick={onClose} className="bg-gray-200">Отмена</Button>
-          <Button onClick={handleSubmit(handleSave)} className="bg-green-200">Сохранить</Button>
+          <Button onClick={onClose} isDarkMode={isDarkMode} className="bg-gray-200">Отмена</Button>
+          <Button onClick={handleSubmit(handleSave)} isDarkMode={isDarkMode} className={`hover:bg-green-500 ${isDarkMode 
+          ? 'bg-green-800'
+          : 'bg-green-600'}`}>Сохранить</Button>
         </div>
       </div>
     </div>

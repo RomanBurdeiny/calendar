@@ -2,25 +2,18 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { useForm, FormProvider } from "react-hook-form";
 import Task from "./Task";
 import TaskModal from "./TaskModal";
-import { format, addDays, subDays } from "date-fns";
+import { format, addDays, subDays, isToday } from "date-fns";
 import Button from "./Button";
-import {TaskType} from "./types"
+import { TaskType } from "./types";
 import Header from "./Header";
-
-// type TaskType = {
-//   id: number;
-//   title: string;
-//   description: string;
-//   completed: boolean;
-//   date: string; // Дата хранится в формате "yyyy-MM-dd" в задачах
-// };
 
 const TaskList = () => {
   const [tasks, setTasks] = useState<TaskType[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
-  const [dates, setDates] = useState<Date[]>(Array.from({ length: 14 }, (_, i) => addDays(subDays(new Date(), 7), i)));
+  const [dates, setDates] = useState<Date[]>(Array.from({ length: 15 }, (_, i) => addDays(new Date(), i - 7)));
   const [editingTask, setEditingTask] = useState<TaskType | null>(null);
+  const [isDarkMode, setIsDarkMode] = useState(false);
 
   const scrollRef = useRef<HTMLDivElement | null>(null);
   const selectedDateRef = useRef<HTMLButtonElement | null>(null);
@@ -30,7 +23,7 @@ const TaskList = () => {
       title: "",
       description: "",
       completed: false,
-      date: format(new Date(), "yyyy-MM-dd"), // Дата хранится в "yyyy-MM-dd"
+      date: format(new Date(), "yyyy-MM-dd"),
     },
   });
 
@@ -57,25 +50,51 @@ const TaskList = () => {
     } else {
       localStorage.removeItem("tasks");
     }
-    console.log("Текущие задачи", tasks);
   }, [tasks]);
+
+  useEffect(() => {
+    if (isDarkMode) {
+      document.documentElement.classList.add("dark");
+    } else {
+      document.documentElement.classList.remove("dark");
+    }
+  }, [isDarkMode]);
 
   const handleScroll = useCallback(() => {
     if (scrollRef.current) {
       const { scrollLeft, scrollWidth, clientWidth } = scrollRef.current;
+
       if (scrollLeft + clientWidth >= scrollWidth - 10) {
-        const lastDate = dates[dates.length - 1]; // Берем последнюю дату
+        const lastDate = dates[dates.length - 1];
         const newDates = Array.from({ length: 7 }, (_, i) => addDays(lastDate, i + 1));
         setDates((prev) => [...prev, ...newDates]);
+      }
+
+      if (scrollLeft <= 10) {
+        const firstDate = dates[0];
+        const newDates = Array.from({ length: 7 }, (_, i) => subDays(firstDate, i + 1)).reverse();
+        setDates((prev) => [...newDates, ...prev]);
+
+        const prevScrollLeft = scrollRef.current.scrollLeft;
+        const prevScrollWidth = scrollRef.current.scrollWidth;
+
+        setTimeout(() => {
+          if (scrollRef.current) {
+            const newScrollWidth = scrollRef.current.scrollWidth;
+            scrollRef.current.scrollLeft = prevScrollLeft + (newScrollWidth - prevScrollWidth);
+          }
+        }, 0);
       }
     }
   }, [dates]);
 
   useEffect(() => {
-    if (selectedDateRef.current) {
-      selectedDateRef.current.scrollIntoView({ behavior: "smooth", block: "center", inline: "center" });
-    }
-  }, [selectedDate]);
+    setTimeout(() => {
+      if (selectedDateRef.current) {
+        selectedDateRef.current.scrollIntoView({ inline: "center", block: "nearest", behavior: "auto" });
+      }
+    }, 0);
+  }, []);
 
   useEffect(() => {
     const currentRef = scrollRef.current;
@@ -141,37 +160,57 @@ const TaskList = () => {
   };
 
   const filteredTasks = tasks.filter((task) => task.date === format(selectedDate, "yyyy-MM-dd"));
-  const [isDarkMode, setIsDarkMode] = useState(false);
-
   const toggleDarkMode = () => setIsDarkMode((prev) => !prev);
-  
-  return (
-    <div className="dark:bg-black bg-gray-100 min-h-screen flex flex-col items-center">
-     <Header isDarkMode={isDarkMode} toggleDarkMode={toggleDarkMode}/>
-      <h1 className="text-2xl font-bold text-black mb-4">Список задач</h1>
 
-      <div ref={scrollRef} className="w-full max-w-2xl overflow-x-auto whitespace-nowrap flex gap-2 p-2 border-b border-gray-300 scrollbar-hide">
+  return (
+    <div className={isDarkMode 
+    ? 'min-h-screen flex flex-col items-center bg-black' 
+    : 'min-h-screen flex flex-col items-center bg-gray-100'}>
+      <Header isDarkMode={isDarkMode} toggleDarkMode={toggleDarkMode} />
+      <h1 className={isDarkMode 
+      ? 'dark text-2xl font-bold mb-4 text-white' 
+      : 'text-2xl font-bold mb-4 text-black'}>Список задач
+      </h1>
+
+      <div ref={scrollRef} className="w-full max-w-2xl overflow-x-auto whitespace-nowrap flex gap-2 p-2 border-b border-gray-300 dark:border-gray-600 scrollbar-hide">
         {dates.map((date) => {
-          const formattedDate = format(date, "E dd"); // Форматируем дату перед рендерингом
-          const hasTasks = tasks.some((task) => task.date === format(date, "yyyy-MM-dd"));
+          const formattedDate = format(date, "E dd");
+          const dateKey = format(date, "yyyy-MM-dd");
+          const tasksForDate = tasks.filter((task) => task.date === dateKey);
+          const hasUncompleted = tasksForDate.some((task) => !task.completed);
+          const hasCompleted = tasksForDate.some((task) => task.completed);
+          const isTodayDate = isToday(date);
+
           return (
             <button
               key={formattedDate}
               ref={format(selectedDate, "E dd") === formattedDate ? selectedDateRef : null}
               onClick={() => setSelectedDate(date)}
-              className={`relative px-4 py-2 rounded text-sm transition flex items-center gap-2 ${
-                format(selectedDate, "E dd") === formattedDate ? "bg-gray-400 text-black font-bold border border-gray-700 shadow-lg" : "bg-gray-200 text-gray-700 hover:bg-gray-300"
-              }`}
+              className={`relative px-4 py-2 rounded text-sm transition flex items-center gap-2 
+                ${format(selectedDate, "E dd") === formattedDate
+                ? `font-bold border border-gray-700 shadow-lg 
+                ${isDarkMode 
+                ? 'bg-orange-600 text-white' 
+                : ' bg-orange-400 text-black'}`
+                : isTodayDate
+                ? 'bg-gray-800 font-semibold'
+                : `hover:bg-orange-400 
+                ${isDarkMode 
+                ? 'bg-orange-700 text-white' 
+                : 'bg-orange-200 text-gray-700'}`}`}
             >
               {formattedDate}
-              {hasTasks && <span className="absolute right-1 top-1 w-2.5 h-2.5 bg-orange-500 rounded-full"></span>}
+              <div className="absolute bottom-1 right-1 flex gap-1">
+                {hasUncompleted && <span className="w-2 h-2 bg-red-500 rounded-full"></span>}
+                {hasCompleted && <span className="w-2 h-2 bg-green-500 rounded-full"></span>}
+              </div>
             </button>
           );
         })}
       </div>
 
       {filteredTasks.length === 0 ? (
-        <p className="text-gray-500 text-lg mt-4">На этот день задач нет</p>
+        <p className="text-gray-500 dark:text-gray-400 text-lg mt-4">На этот день задач нет</p>
       ) : (
         <div className="w-full max-w-2xl mt-4">
           {filteredTasks.map((task) => (
@@ -185,17 +224,27 @@ const TaskList = () => {
                   prev.map((t) => (t.id === task.id ? { ...t, completed: !t.completed } : t))
                 )
               }
+              isDarkMode={isDarkMode}
             />
           ))}
         </div>
       )}
 
-      <Button onClick={handleAddTask} className="mt-6 bg-purple-200 text-black px-6 py-3 rounded shadow hover:bg-purple-300 transition">
-        Добавить задачу
-      </Button>
+      <Button onClick={handleAddTask} 
+      children={'Добавить задачу'} 
+      isDarkMode={isDarkMode} 
+      className={`mt-6 px-6 py-3 rounded shadow transition 
+        ${isDarkMode 
+        ? 'bg-purple-600 hover:bg-purple-700'
+        : 'bg-purple-200 hover:bg-purple-300'}`} 
+       />
 
       <FormProvider {...formMethods}>
-        <TaskModal isOpen={isModalOpen} onClose={closeModal} onSave={handleSaveTask} />
+        <TaskModal 
+        isOpen={isModalOpen} 
+        onClose={closeModal} 
+        onSave={handleSaveTask} 
+        isDarkMode={isDarkMode} />
       </FormProvider>
     </div>
   );

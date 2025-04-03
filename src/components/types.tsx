@@ -7,22 +7,29 @@ export interface TaskType {
   }
   
   export interface TaskModalProps {
+    isDarkMode: boolean;
     isOpen: boolean;
     onClose: () => void;
-    onSave: (taskData: Omit<TaskType, "id">) => void;
-    task?: TaskType | null;
-    isDarkMode: boolean;
+    onSave: (task: { 
+      title: string;
+      description: string;
+      completed: boolean;
+      date: string 
+    }) => void;
   }
   
   export interface ToggleSwitchProps {
     checked: boolean;
     onChange: () => void;
+    children: React.ReactNode;
+    isDarkMode: boolean;
   }
   
   export interface ButtonProps {
-    text: string;
     onClick: () => void;
+    children: React.ReactNode;
     className?: string;
+    isDarkMode: boolean;
   }
   
   export interface HeaderProps {
