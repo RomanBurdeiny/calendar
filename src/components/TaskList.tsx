@@ -190,19 +190,21 @@ const TaskList = () => {
                 ${format(selectedDate, "E dd") === formattedDate
                 ? `font-bold border border-gray-700 shadow-lg 
                 ${isDarkMode 
-                ? 'bg-orange-600 text-white' 
+                ? 'bg-orange-500 text-white' 
                 : ' bg-orange-400 text-black'}`
                 : isTodayDate
-                ? 'bg-gray-800 font-semibold'
+                ? `${isDarkMode 
+                  ? 'bg-gray-700 text-white' 
+                  : 'bg-gray-400 text-gray-700'}`
                 : `hover:bg-orange-400 
                 ${isDarkMode 
-                ? 'bg-orange-700 text-white' 
+                ? 'bg-orange-600 text-white' 
                 : 'bg-orange-200 text-gray-700'}`}`}
             >
               {formattedDate}
               <div className="absolute bottom-1 right-1 flex gap-1">
-                {hasUncompleted && <span className="w-2 h-2 bg-red-500 rounded-full"></span>}
-                {hasCompleted && <span className="w-2 h-2 bg-green-500 rounded-full"></span>}
+                {hasUncompleted && <span className="w-2 h-2 bg-red-600 rounded-full"></span>}
+                {hasCompleted && <span className="w-2 h-2 bg-green-600 rounded-full"></span>}
               </div>
             </button>
           );
