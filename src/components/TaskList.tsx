@@ -13,7 +13,10 @@ const TaskList = () => {
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [dates, setDates] = useState<Date[]>(Array.from({ length: 15 }, (_, i) => addDays(new Date(), i - 7)));
   const [editingTask, setEditingTask] = useState<TaskType | null>(null);
-  const [isDarkMode, setIsDarkMode] = useState(false);
+  const [isDarkMode, setIsDarkMode] = useState(() => {
+    const stored = localStorage.getItem("theme");
+    return stored === "dark"
+  })
 
   const scrollRef = useRef<HTMLDivElement | null>(null);
   const selectedDateRef = useRef<HTMLButtonElement | null>(null);
@@ -55,8 +58,10 @@ const TaskList = () => {
   useEffect(() => {
     if (isDarkMode) {
       document.documentElement.classList.add("dark");
+      localStorage.setItem("theme", "dark");
     } else {
       document.documentElement.classList.remove("dark");
+      localStorage.setItem("theme", "light");
     }
   }, [isDarkMode]);
 
@@ -172,7 +177,7 @@ const TaskList = () => {
       : 'text-2xl font-bold mb-4 text-black'}>Список задач
       </h1>
 
-      <div ref={scrollRef} className="w-full max-w-2xl overflow-x-auto whitespace-nowrap flex gap-2 p-2 border-b border-gray-300 dark:border-gray-600 scrollbar-hide">
+      <div ref={scrollRef} className="scrollbar-custom w-full max-w-2xl overflow-x-auto whitespace-nowrap flex gap-2 p-2 border-b border-gray-300 dark:border-gray-600 scrollbar-hide">
         {dates.map((date) => {
           const formattedDate = format(date, "E dd");
           const dateKey = format(date, "yyyy-MM-dd");
