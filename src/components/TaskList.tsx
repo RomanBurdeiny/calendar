@@ -168,91 +168,97 @@ const TaskList = () => {
   const toggleDarkMode = () => setIsDarkMode((prev) => !prev);
 
   return (
-    <div className={isDarkMode 
-    ? 'min-h-screen flex flex-col items-center bg-black' 
-    : 'min-h-screen flex flex-col items-center bg-gray-100'}>
-      <Header isDarkMode={isDarkMode} toggleDarkMode={toggleDarkMode} />
-      <h1 className={isDarkMode 
-      ? 'dark text-2xl font-bold mb-4 text-white' 
-      : 'text-2xl font-bold mb-4 text-black'}>Список задач
-      </h1>
+    <div className={`min-h-screen w-full flex flex-col items-center ${isDarkMode 
+    ? ' bg-gray-800' 
+    : ' bg-gray-100'}`}>
+       <Header isDarkMode={isDarkMode} toggleDarkMode={toggleDarkMode} />
+      <div className="max-w-screen-xl mx-auto px-4">
+       
+        <h1 className={isDarkMode 
+        ? 'dark text-2xl font-bold mb-4 text-white' 
+        : 'text-2xl font-bold mb-4 text-black'}>Список задач
+        </h1>
 
-      <div ref={scrollRef} className="scrollbar-custom w-full max-w-2xl overflow-x-auto whitespace-nowrap flex gap-2 p-2 border-b border-gray-300 dark:border-gray-600 scrollbar-hide">
-        {dates.map((date) => {
-          const formattedDate = format(date, "E dd");
-          const dateKey = format(date, "yyyy-MM-dd");
-          const tasksForDate = tasks.filter((task) => task.date === dateKey);
-          const hasUncompleted = tasksForDate.some((task) => !task.completed);
-          const hasCompleted = tasksForDate.some((task) => task.completed);
-          const isTodayDate = isToday(date);
+        <div ref={scrollRef} className={`scrollbar-custom w-full max-w-screen-xl overflow-x-auto whitespace-nowrap flex gap-2 p-2 border-b scrollbar-hide 
+          ${isDarkMode 
+          ? 'border-gray-600' 
+          : 'border-gray-300'}`}>
+          {dates.map((date) => {
+            const formattedDate = format(date, "E dd");
+            const dateKey = format(date, "yyyy-MM-dd");
+            const tasksForDate = tasks.filter((task) => task.date === dateKey);
+            const hasUncompleted = tasksForDate.some((task) => !task.completed);
+            const hasCompleted = tasksForDate.some((task) => task.completed);
+            const isTodayDate = isToday(date);
 
-          return (
-            <button
-              key={formattedDate}
-              ref={format(selectedDate, "E dd") === formattedDate ? selectedDateRef : null}
-              onClick={() => setSelectedDate(date)}
-              className={`relative px-4 py-2 rounded text-sm transition flex items-center gap-2 
-                ${format(selectedDate, "E dd") === formattedDate
-                ? `font-bold border border-gray-700 shadow-lg 
-                ${isDarkMode 
-                ? 'bg-orange-500 text-white' 
-                : ' bg-orange-400 text-black'}`
-                : isTodayDate
-                ? `${isDarkMode 
-                  ? 'bg-gray-700 text-white' 
-                  : 'bg-gray-400 text-gray-700'}`
-                : `hover:bg-orange-400 
-                ${isDarkMode 
-                ? 'bg-orange-600 text-white' 
-                : 'bg-orange-200 text-gray-700'}`}`}
-            >
-              {formattedDate}
-              <div className="absolute bottom-1 right-1 flex gap-1">
-                {hasUncompleted && <span className="w-2 h-2 bg-red-600 rounded-full"></span>}
-                {hasCompleted && <span className="w-2 h-2 bg-green-600 rounded-full"></span>}
-              </div>
-            </button>
-          );
-        })}
-      </div>
-
-      {filteredTasks.length === 0 ? (
-        <p className="text-gray-500 dark:text-gray-400 text-lg mt-4">На этот день задач нет</p>
-      ) : (
-        <div className="w-full max-w-2xl mt-4">
-          {filteredTasks.map((task) => (
-            <Task
-              key={task.id}
-              {...task}
-              onEdit={() => handleEditTask(task)}
-              onDelete={() => setTasks((prev) => prev.filter((t) => t.id !== task.id))}
-              onToggleComplete={() =>
-                setTasks((prev) =>
-                  prev.map((t) => (t.id === task.id ? { ...t, completed: !t.completed } : t))
-                )
-              }
-              isDarkMode={isDarkMode}
-            />
-          ))}
+            return (
+              <button
+                key={formattedDate}
+                ref={format(selectedDate, "E dd") === formattedDate ? selectedDateRef : null}
+                onClick={() => setSelectedDate(date)}
+                className={`relative px-4 py-2 rounded text-sm transition flex items-center gap-2 
+                  ${format(selectedDate, "E dd") === formattedDate
+                  ? `font-bold border border-gray-700 shadow-lg 
+                  ${isDarkMode 
+                  ? 'bg-orange-500 text-white' 
+                  : ' bg-orange-400 text-black'}`
+                  : isTodayDate
+                  ? `${isDarkMode 
+                    ? 'bg-gray-700 text-white' 
+                    : 'bg-gray-400 text-gray-700'}`
+                  : `hover:bg-orange-400 
+                  ${isDarkMode 
+                  ? 'bg-orange-600 text-white' 
+                  : 'bg-orange-200 text-gray-700'}`}`}
+              >
+                {formattedDate}
+                <div className="absolute bottom-1 right-1 flex gap-1">
+                  {hasUncompleted && <span className="w-2 h-2 bg-red-700 rounded-full"></span>}
+                  {hasCompleted && <span className="w-2 h-2 bg-green-600 rounded-full"></span>}
+                </div>
+              </button>
+            );
+          })}
         </div>
-      )}
 
-      <Button onClick={handleAddTask} 
-      children={'Добавить задачу'} 
-      isDarkMode={isDarkMode} 
-      className={`mt-6 px-6 py-3 rounded shadow transition 
-        ${isDarkMode 
-        ? 'bg-purple-600 hover:bg-purple-700'
-        : 'bg-purple-200 hover:bg-purple-300'}`} 
-       />
+        {filteredTasks.length === 0 ? (
+          <p className="text-gray-500 dark:text-gray-400 text-lg mt-4">На этот день задач нет</p>
+        ) : (
+          <div className="flex flex-wrap gap-4 justify-center mt-4">
+            {filteredTasks.map((task) => (
+              <Task
+                key={task.id}
+                {...task}
+                onEdit={() => handleEditTask(task)}
+                onDelete={() => setTasks((prev) => prev.filter((t) => t.id !== task.id))}
+                onToggleComplete={() =>
+                  setTasks((prev) =>
+                    prev.map((t) => (t.id === task.id ? { ...t, completed: !t.completed } : t))
+                  )
+                }
+                isDarkMode={isDarkMode}
+              />
+            ))}
+          </div>
+        )}
 
-      <FormProvider {...formMethods}>
-        <TaskModal 
-        isOpen={isModalOpen} 
-        onClose={closeModal} 
-        onSave={handleSaveTask} 
-        isDarkMode={isDarkMode} />
-      </FormProvider>
+        <Button onClick={handleAddTask} 
+        children={'Добавить задачу'} 
+        isDarkMode={isDarkMode} 
+        className={`mt-6 px-6 py-3 rounded shadow transition 
+          ${isDarkMode 
+          ? 'bg-purple-600 hover:bg-purple-700'
+          : 'bg-purple-200 hover:bg-purple-300'}`} 
+        />
+
+        <FormProvider {...formMethods}>
+          <TaskModal 
+          isOpen={isModalOpen} 
+          onClose={closeModal} 
+          onSave={handleSaveTask} 
+          isDarkMode={isDarkMode} />
+        </FormProvider>
+      </div>
     </div>
   );
 };

@@ -14,7 +14,7 @@ type TaskProps = {
 
 const Task: React.FC<TaskProps> = ({ id, title, description, completed, onEdit, onDelete, onToggleComplete, isDarkMode }) => {
   return (
-    <div className={`mb-4 mr-10 ml-10 p-4 shadow rounded-md max-w-full break-words 
+    <div className={`mb-4 p-4 shadow rounded-md w-full sm:w-[calc(50%-1rem)] lg:w-[calc(33.333%-1rem)] max-w-sm 
     ${isDarkMode 
     ? "bg-gray-900 " 
     : "bg-white "}`} 

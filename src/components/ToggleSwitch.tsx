@@ -9,7 +9,7 @@ const ToggleSwitch: React.FC<ToggleSwitchProps> = ({ checked, onChange, children
         ? 'peer-focus:ring-blue-800 bg-gray-700 border-gray-600 peer-checked:bg-blue-600' 
         : 'bg-gray-200 peer-focus:ring-blue-300 peer-checked:bg-green-600'}  `}></div>
       <span className={`text-sm font-medium ${isDarkMode 
-        ? 'bg-gray-800 text-white' 
+        ? 'bg-gray-900 text-white' 
         : 'text-black'}`}>
         {children}
       </span>
