@@ -27,28 +27,29 @@ const TaskModal: React.FC<TaskModalProps> = ({ isOpen, onClose, onSave, isDarkMo
     onClose();
   };
 
+  const inputClass = "w-full border px-4 py-2 rounded-md mb-4";
+
   return (
     <div 
-    className={`fixed inset-0 flex items-center justify-center bg-black/50 backdrop-blur-sm z-50 
-    ${isDarkMode 
-    ? 'text-white' 
-    :'text-black'}`}>
+      className={`fixed inset-0 flex items-center justify-center bg-black/50 backdrop-blur-sm z-50 
+        ${isDarkMode ? 'text-white' : 'text-black'}`}
+    >
       <div 
-      className={`p-6 w-96 rounded-lg shadow-xl  
-      ${isDarkMode 
-      ? ' bg-gray-900 text-white' 
-      :'bg-white text-black'}`}>
+        className={`p-6 w-96 rounded-lg shadow-xl 
+          ${isDarkMode ? 'bg-gray-900 text-white' : 'bg-white text-black'}`}
+      >
         <h2 
-        className={`text-xl font-bold mb-4 text-center  
-        ${isDarkMode ? 'text-white' 
-        :'text-black'}`}>Добавить задачу
+          className={`text-xl font-bold mb-6 text-center 
+            ${isDarkMode ? 'text-white' : 'text-black'}`}
+        >
+          Добавить задачу
         </h2>
 
         <Controller
           name="title"
           control={control}
           render={({ field }) => (
-            <input {...field} className="w-full border px-4 py-2 mb-4" placeholder="Введите заголовок" />
+            <input {...field} className={inputClass} placeholder="Введите заголовок" />
           )}
         />
 
@@ -56,7 +57,7 @@ const TaskModal: React.FC<TaskModalProps> = ({ isOpen, onClose, onSave, isDarkMo
           name="description"
           control={control}
           render={({ field }) => (
-            <textarea {...field} className="w-full border px-4 py-2 mb-4" placeholder="Введите описание" />
+            <textarea {...field} className={inputClass} placeholder="Введите описание" />
           )}
         />
 
@@ -68,26 +69,31 @@ const TaskModal: React.FC<TaskModalProps> = ({ isOpen, onClose, onSave, isDarkMo
               selected={new Date(field.value)}
               onChange={(date) => field.onChange(date?.toISOString().split("T")[0])}
               dateFormat="yyyy-MM-dd"
-              className="w-full border px-4 py-2 mb-4"
+              className={inputClass}
             />
           )}
         />
+
         <Controller
           name="completed"
           control={control}
           render={({ field }) => (
-            <div className="mb-4 flex items-center gap-2">
-              <ToggleSwitch checked={field.value} onChange={field.onChange} children isDarkMode/>
-              <span className="text-gray-700">Задача выполнена</span>
+            <div className="mb-6 flex items-center justify-between">
+              <ToggleSwitch checked={field.value} onChange={field.onChange} children={'Задача выполнена'} isDarkMode={isDarkMode} />
             </div>
           )}
         />
 
-        <div className="flex justify-end space-x-4">
-          <Button onClick={onClose} isDarkMode={isDarkMode} className="bg-gray-200">Отмена</Button>
-          <Button onClick={handleSubmit(handleSave)} isDarkMode={isDarkMode} className={`hover:bg-green-500 ${isDarkMode 
-          ? 'bg-green-800'
-          : 'bg-green-600'}`}>Сохранить</Button>
+        <div className="flex justify-between space-x-4">
+          <Button onClick={onClose} 
+          isDarkMode={isDarkMode} 
+          className="bg-gray-200" 
+          children={'Отмена'}/>
+          <Button 
+            onClick={handleSubmit(handleSave)} 
+            isDarkMode={isDarkMode} 
+            className={`hover:bg-green-500 ${isDarkMode ? 'bg-green-800' : 'bg-green-600'}`}
+            children={'Сохранить'}/>
         </div>
       </div>
     </div>

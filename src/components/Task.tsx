@@ -28,13 +28,13 @@ const Task: React.FC<TaskProps> = ({ id, title, description, completed, onEdit, 
         : "text-black"} break-words`}>
         {title}
       </h2>
-      <p className={`mt-2 
-        ${isDarkMode 
-        ? "text-white " 
-        : "text-black "} 
-        ${completed ? "line-through text-gray-500" 
-        : "text-black dark:text-gray-300"} break-words`}>
-        {description}
+      <p className={`mt-2 break-words
+        ${completed 
+          ? `line-through ${isDarkMode ? 'text-gray-400' : 'text-gray-800'}` 
+          : `${isDarkMode ? 'text-gray-300' : 'text-black'}`}
+          ${!description && "italic text-gray-400"}
+        `}>
+        {description || '"no description"'}
       </p>
       <div className="flex gap-4 mt-4 items-center flex-wrap">
         <Button onClick={onEdit} 
