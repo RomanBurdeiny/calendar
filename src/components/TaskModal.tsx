@@ -17,17 +17,13 @@ const TaskModal: React.FC<TaskModalProps> = ({ isOpen, onClose, onSave, isDarkMo
       completed: watch("completed"),
       date: watch("date"),
     };
-    if (!taskData.title.trim()) {
-      alert("Заголовок не может быть пустым!");
-      return;
-    }
 
     onSave(taskData);
     reset();
     onClose();
   };
 
-  const inputClass = "w-full border px-4 py-2 rounded-md mb-4";
+  const inputClass = "w-full border px-4 py-2 rounded-md mt-4";
 
   return (
     <div 
@@ -35,11 +31,11 @@ const TaskModal: React.FC<TaskModalProps> = ({ isOpen, onClose, onSave, isDarkMo
         ${isDarkMode ? 'text-white' : 'text-black'}`}
     >
       <div 
-        className={`p-6 w-96 rounded-lg shadow-xl 
+        className={`p-6 w-96 rounded-lg shadow-xl flex-col
           ${isDarkMode ? 'bg-gray-900 text-white' : 'bg-white text-black'}`}
       >
         <h2 
-          className={`text-xl font-bold mb-6 text-center 
+          className={`text-xl font-bold text-center 
             ${isDarkMode ? 'text-white' : 'text-black'}`}
         >
           Добавить задачу
@@ -48,8 +44,12 @@ const TaskModal: React.FC<TaskModalProps> = ({ isOpen, onClose, onSave, isDarkMo
         <Controller
           name="title"
           control={control}
-          render={({ field }) => (
-            <input {...field} className={inputClass} placeholder="Введите заголовок" />
+          rules={{ required: "Заголовок обязателен" }}
+          render={({ field, fieldState }) => (
+            <div>
+              <input {...field} className={inputClass} placeholder="Введите заголовок" />
+              {fieldState.error && <p className="text-red-500 text-sm">{fieldState.error.message}</p>}
+            </div>
           )}
         />
 
@@ -69,7 +69,7 @@ const TaskModal: React.FC<TaskModalProps> = ({ isOpen, onClose, onSave, isDarkMo
               selected={new Date(field.value)}
               onChange={(date) => field.onChange(date?.toISOString().split("T")[0])}
               dateFormat="yyyy-MM-dd"
-              className={inputClass}
+              className={'w-full border px-4 py-2 rounded-md mt-2'}
             />
           )}
         />
@@ -78,7 +78,7 @@ const TaskModal: React.FC<TaskModalProps> = ({ isOpen, onClose, onSave, isDarkMo
           name="completed"
           control={control}
           render={({ field }) => (
-            <div className="mb-6 flex items-center justify-between">
+            <div className="mt-4 mb-4 flex items-center justify-between">
               <ToggleSwitch checked={field.value} onChange={field.onChange} children={'Задача выполнена'} isDarkMode={isDarkMode} />
             </div>
           )}

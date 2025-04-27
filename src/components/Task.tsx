@@ -14,25 +14,24 @@ type TaskProps = {
 
 const Task: React.FC<TaskProps> = ({ id, title, description, completed, onEdit, onDelete, onToggleComplete, isDarkMode }) => {
   return (
-    <div className={`mb-4 p-4 shadow rounded-md w-full sm:w-[calc(50%-1rem)] lg:w-[calc(33.333%-1rem)] max-w-sm 
+    <div className={`p-4 shadow rounded-lg 
+    w-full sm:w-1/2 lg:w-5/6 min-w-m
+    flex flex-col justify-between  
+    transition-colors duration-500 
     ${isDarkMode 
     ? "bg-gray-900 " 
     : "bg-white "}`} 
     data-task-id={id}>
-      <h2 className={`text-xl font-bold 
-      ${isDarkMode 
-        ? "text-white " 
-        : "text-black "} 
+      <h2 className={`text-xl font-bold break-words
       ${completed 
-        ? "line-through text-gray-500" 
-        : "text-black"} break-words`}>
+        ? `line-through ${isDarkMode ? 'text-gray-400' : 'text-gray-400'}` 
+        : `${isDarkMode ? 'text-gray-300' : 'text-black'}`}`}>
         {title}
       </h2>
-      <p className={`mt-2 break-words
+      <p className={`mt-2 break-words ${!description && "italic"}
         ${completed 
-          ? `line-through ${isDarkMode ? 'text-gray-400' : 'text-gray-800'}` 
-          : `${isDarkMode ? 'text-gray-300' : 'text-black'}`}
-          ${!description && "italic text-gray-400"}
+          ? `line-through ${isDarkMode ? 'text-gray-400' : 'text-gray-400'}` 
+          : `${isDarkMode ? 'text-gray-300' : 'text-black'}`} 
         `}>
         {description || '"no description"'}
       </p>
