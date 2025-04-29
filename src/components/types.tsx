@@ -33,8 +33,8 @@ export interface ButtonProps {
 }
 
 export interface HeaderProps {
-  isDarkMode: boolean;
-  toggleDarkMode: () => void;
+  theme: "light" | "dark";
+  toggleTheme: () => void;
 }
 
 export interface TaskListProps {

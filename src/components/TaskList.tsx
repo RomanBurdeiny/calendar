@@ -143,7 +143,7 @@ const TaskList: React.FC<TaskListProps> = ({ theme, toggleTheme }) => {
 
   return (
     <div className={`min-h-screen w-full flex flex-col items-center transition-colors duration-500 ${isDark ? 'bg-gray-800' : 'bg-gray-100'}`}>
-      <Header isDarkMode={isDark} toggleDarkMode={toggleTheme} />
+      <Header theme={theme} toggleTheme={toggleTheme} />
       <div className="max-w-screen-xl mx-auto px-4">
         <h1 className={`text-2xl font-bold mb-4 transition-colors duration-500 ${isDark ? 'text-white' : 'text-black'}`}>Список задач</h1>
         <div ref={scrollRef} className={`scrollbar-custom overflow-x-auto whitespace-nowrap flex gap-2 p-2 border-b scrollbar-hide transition-colors duration-500 ${isDark ? 'border-gray-600' : 'border-gray-300'}`}>
@@ -201,7 +201,7 @@ const TaskList: React.FC<TaskListProps> = ({ theme, toggleTheme }) => {
           onClick={handleAddTask}
           children={'Добавить задачу'}
           isDarkMode={isDark}
-          className={`mt-6 px-6 py-3 rounded shadow transition ${isDark ? 'bg-purple-600 hover:bg-purple-700' : 'bg-purple-200 hover:bg-purple-300'}`}
+          className={`mt-6 px-6 py-3 rounded shadow transition-colors ${isDark ? 'bg-purple-600 hover:bg-purple-700' : 'bg-purple-200 hover:bg-purple-300'}`}
         />
 
         <FormProvider {...formMethods}>
