@@ -1,78 +1,99 @@
-import { useState } from "react";
+import { Controller, useFormContext } from "react-hook-form";
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
 import Button from "./Button";
 import ToggleSwitch from "./ToggleSwitch";
+import { TaskModalProps } from "./types";
 
-type TaskModalProps = {
-  isOpen: boolean;
-  title: string;
-  description: string;
-  completed: boolean;
-  onTitleChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
-  onDescriptionChange: (e: React.ChangeEvent<HTMLTextAreaElement>) => void;
-  onCompletedChange: () => void;
-  onClose: () => void;
-  onSave: () => void;
-};
-
-const TaskModal: React.FC<TaskModalProps> = ({
-  isOpen,
-  title,
-  description,
-  completed,
-  onTitleChange,
-  onDescriptionChange,
-  onCompletedChange,
-  onClose,
-  onSave,
-}) => {
-  const [error, setError] = useState("");
-
-  const handleSave = () => {
-    if (!title.trim()) {
-      setError("Заголовок не может быть пустым!");
-      return;
-    }
-    setError("");
-    onSave();
-  };
+const TaskModal: React.FC<TaskModalProps> = ({ isOpen, onClose, onSave, isDarkMode }) => {
+  const { handleSubmit, control, reset, watch } = useFormContext();
 
   if (!isOpen) return null;
 
+  const handleSave = () => {
+    const taskData = {
+      title: watch("title"),
+      description: watch("description"),
+      completed: watch("completed"),
+      date: watch("date"),
+    };
+
+    onSave(taskData);
+    reset();
+    onClose();
+  };
+
+  const inputClass = "w-full border px-4 py-2 rounded-md mt-4";
+
   return (
-    <div className="fixed inset-0 flex justify-center items-center bg-black/50 backdrop-blur-lg">
-      <div className="bg-white rounded-lg shadow-lg p-6 w-96">
-        <h2 className="text-xl font-bold mb-4">Редактирование задачи</h2>
+    <div 
+      className={`fixed inset-0 flex items-center justify-center bg-black/50 backdrop-blur-sm z-50 
+        ${isDarkMode ? 'text-white' : 'text-black'}`}
+    >
+      <div 
+        className={`p-6 w-96 rounded-lg shadow-xl flex-col
+          ${isDarkMode ? 'bg-gray-900 text-white' : 'bg-white text-black'}`}
+      >
+        <h2 
+          className={`text-xl font-bold text-center 
+            ${isDarkMode ? 'text-white' : 'text-black'}`}
+        >
+          Добавить задачу
+        </h2>
 
-        {error && <p className="text-red-500 text-sm mb-2">{error}</p>}
-
-        {/* Поле ввода заголовка */}
-        <label className="block text-sm font-bold text-gray-700 mb-1">Заголовок</label>
-        <input
-          type="text"
-          value={title}
-          onChange={onTitleChange}
-          placeholder="Введите заголовок"
-          className="w-full border border-gray-300 rounded px-4 py-2 mb-4"
+        <Controller
+          name="title"
+          control={control}
+          rules={{ required: "Заголовок обязателен" }}
+          render={({ field, fieldState }) => (
+            <div>
+              <input {...field} className={inputClass} placeholder="Введите заголовок" />
+              {fieldState.error && <p className="text-red-500 text-sm">{fieldState.error.message}</p>}
+            </div>
+          )}
         />
 
-        {/* Поле ввода описания */}
-        <label className="block text-sm font-bold text-gray-700 mb-1">Описание</label>
-        <textarea
-          value={description}
-          onChange={onDescriptionChange}
-          placeholder="Введите описание"
-          className="w-full border border-gray-300 rounded px-4 py-2 mb-4"
-        ></textarea>
+        <Controller
+          name="description"
+          control={control}
+          render={({ field }) => (
+            <textarea {...field} className={inputClass} placeholder="Введите описание" />
+          )}
+        />
 
-        {/* Toggle Switch */}
-        <div className="flex items-center gap-2 mb-4">
-          <ToggleSwitch checked={completed} onChange={onCompletedChange} />
-          <span className="text-gray-700 font-medium">Задача выполнена</span>
-        </div>
+        <Controller
+          name="date"
+          control={control}
+          render={({ field }) => (
+            <DatePicker
+              selected={new Date(field.value)}
+              onChange={(date) => field.onChange(date?.toISOString().split("T")[0])}
+              dateFormat="yyyy-MM-dd"
+              className={'w-full border px-4 py-2 rounded-md mt-2'}
+            />
+          )}
+        />
 
-        <div className="flex justify-end space-x-4">
-          <Button onClick={onClose} className="bg-gray-200 text-black hover:bg-gray-300">Отмена</Button>
-          <Button onClick={handleSave} className="bg-green-200 text-black hover:bg-green-300">Сохранить</Button>
+        <Controller
+          name="completed"
+          control={control}
+          render={({ field }) => (
+            <div className="mt-4 mb-4 flex items-center justify-between">
+              <ToggleSwitch checked={field.value} onChange={field.onChange} children={'Задача выполнена'} isDarkMode={isDarkMode} />
+            </div>
+          )}
+        />
+
+        <div className="flex justify-between space-x-4">
+          <Button onClick={onClose} 
+          isDarkMode={isDarkMode} 
+          className="bg-gray-200" 
+          children={'Отмена'}/>
+          <Button 
+            onClick={handleSubmit(handleSave)} 
+            isDarkMode={isDarkMode} 
+            className={`hover:bg-green-500 ${isDarkMode ? 'bg-green-800' : 'bg-green-600'}`}
+            children={'Сохранить'}/>
         </div>
       </div>
     </div>

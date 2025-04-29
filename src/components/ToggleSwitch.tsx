@@ -1,13 +1,36 @@
-type ToggleSwitchProps = {
-  checked: boolean;
-  onChange: () => void;
-};
+import { ToggleSwitchProps } from "./types";
 
-const ToggleSwitch: React.FC<ToggleSwitchProps> = ({ checked, onChange }) => {
+const ToggleSwitch: React.FC<ToggleSwitchProps> = ({ checked, onChange, children, isDarkMode }) => {
   return (
-    <label className="relative inline-flex items-center cursor-pointer">
-      <input type="checkbox" checked={checked} onChange={onChange} className="sr-only peer" />
-      <div className="w-11 h-6 bg-gray-300 peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-5 peer-checked:bg-green-500 transition-all duration-300 after:content-[''] after:absolute after:top-0.5 after:left-1 after:bg-white after:border after:rounded-full after:h-5 after:w-5 after:transition-all"></div>
+    <label className="inline-flex items-center cursor-pointer space-x-2">
+      <input 
+        type="checkbox" 
+        checked={checked} 
+        onChange={onChange} 
+        className="sr-only peer" 
+      />
+      <div 
+        className={`w-11 h-6 rounded-full relative transition-colors duration-300
+        ${checked 
+          ? isDarkMode 
+            ? 'bg-green-600' 
+            : 'bg-green-700' 
+          : isDarkMode 
+            ? 'bg-gray-700' 
+            : 'bg-gray-500'
+        }
+        peer-focus:ring-2 peer-focus:ring-offset-2 peer-focus:ring-blue-400
+        shadow-inner`}
+      >
+        <div 
+          className={`absolute top-1 left-1 w-4 h-4 bg-white rounded-full shadow-md 
+          transform transition-transform duration-300
+          ${checked ? 'translate-x-5' : ''}`}
+        />
+      </div>
+      <span className={`text-sm font-medium ${isDarkMode ? 'text-white' : 'text-black'}`}>
+        {children}
+      </span>
     </label>
   );
 };
