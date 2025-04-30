@@ -33,8 +33,6 @@ function App() {
   const toggleTheme = () => {
     const newTheme = currentTheme === "dark" ? "light" : "dark";
     setUserSelectedTheme(newTheme);
-
-    // Если пользователь выбрал системную тему снова — очищаем хранилище
     if (newTheme === systemTheme) {
       localStorage.removeItem("theme");
       setUserSelectedTheme(null);
