@@ -41,3 +41,7 @@ export interface TaskListProps {
   theme: "light" | "dark";
   toggleTheme: () => void;
 }
+
+export default interface IUseInfiniteScroll {
+  loaderRef: React.RefObject<HTMLDivElement>;
+}

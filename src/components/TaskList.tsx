@@ -1,12 +1,12 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useForm, FormProvider } from "react-hook-form";
-import { format, addDays, subDays, isToday } from "date-fns";
-import { useInView } from "react-intersection-observer";
+import { format, addDays, isToday } from "date-fns";
 import Task from "./Task";
 import TaskModal from "./TaskModal";
 import Button from "./Button";
 import Header from "./Header";
 import { TaskType, TaskListProps } from "./types";
+import { useInfiniteScroll } from "../hooks/UseInfiniteScroll";
 
 const TaskList: React.FC<TaskListProps> = ({ theme, toggleTheme }) => {
   const [tasks, setTasks] = useState<TaskType[]>([]);
@@ -14,14 +14,11 @@ const TaskList: React.FC<TaskListProps> = ({ theme, toggleTheme }) => {
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [dates, setDates] = useState<Date[]>(Array.from({ length: 25 }, (_, i) => addDays(new Date(), i - 12)));
   const [editingTask, setEditingTask] = useState<TaskType | null>(null);
-  const [hasInitialized, setHasInitialized] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
 
   const scrollRef = useRef<HTMLDivElement | null>(null);
   const selectedDateRef = useRef<HTMLButtonElement | null>(null);
 
-  const { ref: startRef, inView: startInView } = useInView({ threshold: 1 });
-  const { ref: endRef, inView: endInView } = useInView({ threshold: 1 });
+  const { loaderRef } = useInfiniteScroll(dates, setDates);
 
   const formMethods = useForm({
     defaultValues: {
@@ -48,38 +45,6 @@ const TaskList: React.FC<TaskListProps> = ({ theme, toggleTheme }) => {
   useEffect(() => {
     localStorage.setItem("tasks", tasks.length ? JSON.stringify(tasks) : "");
   }, [tasks]);
-
-  useEffect(() => {
-    if (!hasInitialized) {
-      const timeout = setTimeout(() => setHasInitialized(true), 100);
-      return () => clearTimeout(timeout);
-    }
-    if (isLoading) return;
-
-    if (startInView) {
-      setIsLoading(true);
-      const firstDate = dates[0];
-      const newDates = Array.from({ length: 2 }, (_, i) => subDays(firstDate, i + 1)).reverse();
-      setDates((prev) => [...newDates, ...prev]);
-
-      const prevScrollLeft = scrollRef.current?.scrollLeft || 0;
-      const prevScrollWidth = scrollRef.current?.scrollWidth || 0;
-
-      setTimeout(() => {
-        if (scrollRef.current) {
-          const newScrollWidth = scrollRef.current.scrollWidth;
-          scrollRef.current.scrollLeft = prevScrollLeft + (newScrollWidth - prevScrollWidth);
-        }
-        setIsLoading(false);
-      }, 0);
-    } else if (endInView) {
-      setIsLoading(true);
-      const lastDate = dates[dates.length - 1];
-      const newDates = Array.from({ length: 7 }, (_, i) => addDays(lastDate, i + 1));
-      setDates((prev) => [...prev, ...newDates]);
-      setTimeout(() => setIsLoading(false), 100);
-    }
-  }, [startInView, endInView, hasInitialized, isLoading, dates]);
 
   useEffect(() => {
     setTimeout(() => {
@@ -147,7 +112,6 @@ const TaskList: React.FC<TaskListProps> = ({ theme, toggleTheme }) => {
       <div className="max-w-screen-xl mx-auto px-4">
         <h1 className={`text-2xl font-bold mb-4 transition-colors duration-500 ${isDark ? 'text-white' : 'text-black'}`}>Список задач</h1>
         <div ref={scrollRef} className={`scrollbar-custom overflow-x-auto whitespace-nowrap flex gap-2 p-2 border-b scrollbar-hide transition-colors duration-500 ${isDark ? 'border-gray-600' : 'border-gray-300'}`}>
-          <div ref={startRef} className="w-1 h-1" />
           {dates.map((date) => {
             const formattedDate = format(date, "E dd");
             const dateKey = format(date, "yyyy-MM-dd");
@@ -177,7 +141,7 @@ const TaskList: React.FC<TaskListProps> = ({ theme, toggleTheme }) => {
               </button>
             );
           })}
-          <div ref={endRef} className="w-1 h-1" />
+          <div ref={loaderRef} className="w-1 h-1" />
         </div>
 
         {filteredTasks.length === 0 ? (

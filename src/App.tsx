@@ -3,53 +3,47 @@ import TaskList from "./components/TaskList";
 import "./App.css";
 
 function App() {
-  const [theme, setTheme] = useState<"light" | "dark">(() => {
-    const storedTheme = localStorage.getItem("theme");
-    if (storedTheme === "light" || storedTheme === "dark") {
-      return storedTheme;
-    }
-    const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-    return prefersDark ? "dark" : "light";
+  const getSystemTheme = () =>
+    window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+
+  const [systemTheme, setSystemTheme] = useState<"light" | "dark">(getSystemTheme);
+  const [userSelectedTheme, setUserSelectedTheme] = useState<"light" | "dark" | null>(() => {
+    const stored = localStorage.getItem("theme");
+    return stored === "light" || stored === "dark" ? stored : null;
   });
 
-  // ✅ Подписка на системную смену темы
+  const currentTheme = userSelectedTheme || systemTheme;
+
   useEffect(() => {
     const media = window.matchMedia("(prefers-color-scheme: dark)");
-
-    const handleChange = () => {
-      const stored = localStorage.getItem("theme");
-      if (!stored) {
-        setTheme(media.matches ? "dark" : "light");
-      }
-    };
-
-    media.addEventListener("change", handleChange);
-    return () => media.removeEventListener("change", handleChange);
+    const handler = () => setSystemTheme(media.matches ? "dark" : "light");
+    media.addEventListener("change", handler);
+    return () => media.removeEventListener("change", handler);
   }, []);
 
-  // ✅ Применение темы
   useEffect(() => {
     const root = document.documentElement;
-    if (theme === "dark") {
-      console.log(theme)
+    if (currentTheme === "dark") {
       root.classList.add("dark");
-      localStorage.setItem("theme", "dark");
     } else {
-      console.log(theme)
       root.classList.remove("dark");
-      localStorage.setItem("theme", "light");
     }
-  }, [theme]);
+  }, [currentTheme]);
 
-  // ✅ Тогглер вручную
   const toggleTheme = () => {
-    localStorage.setItem("theme", theme === "dark" ? "light" : "dark");
-    setTheme((prev) => (prev === "light" ? "dark" : "light"));
+    const newTheme = currentTheme === "dark" ? "light" : "dark";
+    setUserSelectedTheme(newTheme);
+    if (newTheme === systemTheme) {
+      localStorage.removeItem("theme");
+      setUserSelectedTheme(null);
+    } else {
+      localStorage.setItem("theme", newTheme);
+    }
   };
 
   return (
     <div className="transition-colors duration-500 min-h-screen">
-      <TaskList theme={theme} toggleTheme={toggleTheme} />
+      <TaskList theme={currentTheme} toggleTheme={toggleTheme} />
     </div>
   );
 }
