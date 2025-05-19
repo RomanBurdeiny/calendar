@@ -1,49 +1,13 @@
-import { useEffect, useState } from "react";
 import TaskList from "./components/TaskList";
-import "./App.css";
+import { useTheme } from "./hooks/UseTheme";
+import "./index.css";
 
 function App() {
-  const getSystemTheme = () =>
-    window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
-
-  const [systemTheme, setSystemTheme] = useState<"light" | "dark">(getSystemTheme);
-  const [userSelectedTheme, setUserSelectedTheme] = useState<"light" | "dark" | null>(() => {
-    const stored = localStorage.getItem("theme");
-    return stored === "light" || stored === "dark" ? stored : null;
-  });
-
-  const currentTheme = userSelectedTheme || systemTheme;
-
-  useEffect(() => {
-    const media = window.matchMedia("(prefers-color-scheme: dark)");
-    const handler = () => setSystemTheme(media.matches ? "dark" : "light");
-    media.addEventListener("change", handler);
-    return () => media.removeEventListener("change", handler);
-  }, []);
-
-  useEffect(() => {
-    const root = document.documentElement;
-    if (currentTheme === "dark") {
-      root.classList.add("dark");
-    } else {
-      root.classList.remove("dark");
-    }
-  }, [currentTheme]);
-
-  const toggleTheme = () => {
-    const newTheme = currentTheme === "dark" ? "light" : "dark";
-    setUserSelectedTheme(newTheme);
-    if (newTheme === systemTheme) {
-      localStorage.removeItem("theme");
-      setUserSelectedTheme(null);
-    } else {
-      localStorage.setItem("theme", newTheme);
-    }
-  };
+  const { theme, toggleTheme } = useTheme();
 
   return (
-    <div className="transition-colors duration-500 min-h-screen">
-      <TaskList theme={currentTheme} toggleTheme={toggleTheme} />
+    <div className="w-screen text-center m-auto transition-colors duration-500 min-h-screen">
+      <TaskList theme={theme} toggleTheme={toggleTheme} />
     </div>
   );
 }

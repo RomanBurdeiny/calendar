@@ -6,6 +6,21 @@ export interface TaskType {
   date: string;
 }
 
+export interface TaskData {
+  title: string;
+  description: string;
+  completed: boolean;
+  date: string;
+}
+
+export interface TaskProps extends TaskData {
+  id: number;
+  onEdit: () => void;
+  onDelete: () => void;
+  onToggleComplete: () => void;
+  isDarkMode: boolean;
+}
+
 export interface TaskModalProps {
   isDarkMode: boolean;
   isOpen: boolean;
