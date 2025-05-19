@@ -1,16 +1,6 @@
 import ToggleSwitch from "./ToggleSwitch";
 import Button from "./Button";
-
-type TaskProps = {
-  id: number;
-  title: string;
-  description: string;
-  completed: boolean;
-  onEdit: () => void;
-  onDelete: () => void;
-  onToggleComplete: () => void;
-  isDarkMode: boolean
-};
+import {TaskProps} from "./types"
 
 const Task: React.FC<TaskProps> = ({ id, title, description, completed, onEdit, onDelete, onToggleComplete, isDarkMode }) => {
   return (

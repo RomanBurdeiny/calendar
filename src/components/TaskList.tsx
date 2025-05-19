@@ -87,7 +87,7 @@ const TaskList: React.FC<TaskListProps> = ({ theme, toggleTheme }) => {
     setIsModalOpen(true);
   };
 
-  const handleSaveTask = (taskData: { title: string; description: string; completed: boolean; date: string }) => {
+  const handleSaveTask = (taskData: Omit<TaskType, "id">) => {
     if (editingTask) {
       setTasks((prevTasks) => prevTasks.map((task) => (task.id === editingTask.id ? { ...task, ...taskData } : task)));
     } else {
