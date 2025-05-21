@@ -38,16 +38,16 @@ const TaskModal: React.FC<TaskModalProps> = ({ isOpen, onClose, onSave, isDarkMo
           className={`text-xl font-bold text-center 
             ${isDarkMode ? 'text-white' : 'text-black'}`}
         >
-          Добавить задачу
+          Adding a task
         </h2>
 
         <Controller
           name="title"
           control={control}
-          rules={{ required: "Заголовок обязателен" }}
+          rules={{ required: "Title is required" }}
           render={({ field, fieldState }) => (
             <div>
-              <input {...field} className={inputClass} placeholder="Введите заголовок" />
+              <input {...field} className={inputClass} placeholder="Title" />
               {fieldState.error && <p className="text-red-500 text-sm">{fieldState.error.message}</p>}
             </div>
           )}
@@ -57,7 +57,7 @@ const TaskModal: React.FC<TaskModalProps> = ({ isOpen, onClose, onSave, isDarkMo
           name="description"
           control={control}
           render={({ field }) => (
-            <textarea {...field} className={inputClass} placeholder="Введите описание" />
+            <textarea {...field} className={inputClass} placeholder="Description" />
           )}
         />
 
@@ -68,7 +68,7 @@ const TaskModal: React.FC<TaskModalProps> = ({ isOpen, onClose, onSave, isDarkMo
             <DatePicker
               selected={new Date(field.value)}
               onChange={(date) => field.onChange(date?.toISOString().split("T")[0])}
-              dateFormat="yyyy-MM-dd"
+              dateFormat="yyyy.MM.dd"
               className={'w-full border px-4 py-2 rounded-md mt-2'}
             />
           )}
@@ -79,7 +79,7 @@ const TaskModal: React.FC<TaskModalProps> = ({ isOpen, onClose, onSave, isDarkMo
           control={control}
           render={({ field }) => (
             <div className="mt-4 mb-4 flex items-center justify-between">
-              <ToggleSwitch checked={field.value} onChange={field.onChange} children={'Задача выполнена'} isDarkMode={isDarkMode} />
+              <ToggleSwitch checked={field.value} onChange={field.onChange} children={'Task completed'} isDarkMode={isDarkMode} />
             </div>
           )}
         />
@@ -87,13 +87,13 @@ const TaskModal: React.FC<TaskModalProps> = ({ isOpen, onClose, onSave, isDarkMo
         <div className="flex justify-between space-x-4">
           <Button onClick={onClose} 
           isDarkMode={isDarkMode} 
-          className="bg-gray-200" 
-          children={'Отмена'}/>
+          className={`${isDarkMode? 'bg-blue-900 hover:bg-blue-700' : 'bg-blue-600 hover:bg-blue-400'}`} 
+          children={'Cancel'}/>
           <Button 
             onClick={handleSubmit(handleSave)} 
             isDarkMode={isDarkMode} 
             className={`hover:bg-green-500 ${isDarkMode ? 'bg-green-800' : 'bg-green-600'}`}
-            children={'Сохранить'}/>
+            children={'Save'}/>
         </div>
       </div>
     </div>

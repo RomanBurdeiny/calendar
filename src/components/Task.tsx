@@ -12,34 +12,43 @@ const Task: React.FC<TaskProps> = ({ id, title, description, completed, onEdit, 
     ? "bg-gray-900 " 
     : "bg-white "}`} 
     data-task-id={id}>
-      <h2 className={`text-xl font-bold break-words
+      <h2 className={`text-xl text-start font-bold break-words transition duration-300
       ${completed 
         ? `line-through ${isDarkMode ? 'text-gray-400' : 'text-gray-400'}` 
         : `${isDarkMode ? 'text-gray-300' : 'text-black'}`}`}>
         {title}
       </h2>
-      <p className={`mt-2 break-words ${!description && "italic"}
+      <p className={`mt-2 text-start break-words transition duration-300 ${!description && "italic"}
         ${completed 
           ? `line-through ${isDarkMode ? 'text-gray-400' : 'text-gray-400'}` 
           : `${isDarkMode ? 'text-gray-300' : 'text-black'}`} 
         `}>
         {description || '"no description"'}
       </p>
-      <div className="flex gap-4 mt-4 items-center flex-wrap">
-        <Button onClick={onEdit} 
-        children={'Редактировать'}
-        isDarkMode={isDarkMode}/>
-        <Button className={`hover:bg-red-500 ${isDarkMode 
-          ? 'bg-red-800'
-          : 'bg-red-600'}`} 
-          onClick={onDelete} 
-          children={'Удалить'} 
-          isDarkMode={isDarkMode} />
+      <div className="flex justify-around gap-4 mt-4 flex-col">
+        <div className="flex justify-start gap-4">
+          <Button 
+          className={`${isDarkMode? 'bg-blue-900 hover:bg-blue-700' : 'bg-blue-500 hover:bg-blue-300'}`}
+          onClick={onEdit} 
+          children={'Edit'}
+          isDarkMode={isDarkMode}/>
+          <Button className={`hover:bg-red-500 ${isDarkMode 
+            ? 'bg-red-800'
+            : 'bg-red-600'}`} 
+            onClick={onDelete} 
+            children={'Delete'} 
+            isDarkMode={isDarkMode} />
+        </div>
         <ToggleSwitch 
+          textClassName={`${completed 
+          ? `line-through ${isDarkMode ? 'text-gray-400' : 'text-gray-400'}` 
+          : `${isDarkMode ? 'text-gray-300' : 'text-black'}`} 
+        `}
           checked={completed} 
           onChange={onToggleComplete} 
-          children 
-          isDarkMode/>
+          isDarkMode={isDarkMode}
+          children={'Active'}
+          />
       </div>
     </div>
   );

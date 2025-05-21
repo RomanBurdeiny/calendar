@@ -23,6 +23,7 @@ const Header: React.FC<HeaderProps> = ({ theme, toggleTheme }) => {
             onChange={toggleTheme} 
             children={'Theme'} 
             isDarkMode={isDarkMode}
+            textClassName={`${isDarkMode ? 'text-white' : 'text-black'}`}
           />
         </div>
 

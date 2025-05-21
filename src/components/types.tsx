@@ -38,6 +38,7 @@ export interface ToggleSwitchProps {
   onChange: () => void;
   children: React.ReactNode;
   isDarkMode: boolean;
+  textClassName?: string;
 }
 
 export interface ButtonProps {

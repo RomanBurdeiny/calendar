@@ -1,6 +1,6 @@
 import { ToggleSwitchProps } from "./types";
 
-const ToggleSwitch: React.FC<ToggleSwitchProps> = ({ checked, onChange, children, isDarkMode }) => {
+const ToggleSwitch: React.FC<ToggleSwitchProps> = ({ checked, onChange, children, isDarkMode, textClassName}) => {
   return (
     <label className="inline-flex items-center cursor-pointer space-x-2">
       <input 
@@ -28,7 +28,7 @@ const ToggleSwitch: React.FC<ToggleSwitchProps> = ({ checked, onChange, children
           ${checked ? 'translate-x-5' : ''}`}
         />
       </div>
-      <span className={`text-sm font-medium ${isDarkMode ? 'text-white' : 'text-black'}`}>
+      <span className={textClassName + `text-sm font-medium transition duration-300`}>
         {children}
       </span>
     </label>

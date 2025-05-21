@@ -110,7 +110,7 @@ const TaskList: React.FC<TaskListProps> = ({ theme, toggleTheme }) => {
     <div className={`min-h-screen w-full flex flex-col items-center transition-colors duration-500 ${isDark ? 'bg-gray-800' : 'bg-gray-100'}`}>
       <Header theme={theme} toggleTheme={toggleTheme} />
       <div className="max-w-screen-xl mx-auto px-4">
-        <h1 className={`text-2xl font-bold mb-4 transition-colors duration-500 ${isDark ? 'text-white' : 'text-black'}`}>Список задач</h1>
+        <h1 className={`text-2xl font-bold mb-4 transition-colors duration-500 ${isDark ? 'text-white' : 'text-black'}`}>Task List</h1>
         <div ref={scrollRef} className={`scrollbar-custom overflow-x-auto whitespace-nowrap flex gap-2 p-2 border-b scrollbar-hide transition-colors duration-500 ${isDark ? 'border-gray-600' : 'border-gray-300'}`}>
           {dates.map((date) => {
             const formattedDate = format(date, "E dd");
@@ -145,9 +145,9 @@ const TaskList: React.FC<TaskListProps> = ({ theme, toggleTheme }) => {
         </div>
 
         {filteredTasks.length === 0 ? (
-          <p className="text-gray-500 dark:text-gray-400 text-lg mt-4">На этот день задач нет</p>
+          <p className="text-gray-500 dark:text-gray-400 text-lg mt-4">There are no tasks for today</p>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 justify-items-center mt-4">
+          <div className="grid grid-cols-4 gap-y-6 justify-items-center mt-4">
             {filteredTasks.map((task) => (
               <Task
                 key={task.id}
@@ -163,7 +163,7 @@ const TaskList: React.FC<TaskListProps> = ({ theme, toggleTheme }) => {
 
         <Button
           onClick={handleAddTask}
-          children={'Добавить задачу'}
+          children={'Add task'}
           isDarkMode={isDark}
           className={`mt-6 px-6 py-3 rounded shadow transition-colors ${isDark ? 'bg-purple-600 hover:bg-purple-700' : 'bg-purple-200 hover:bg-purple-300'}`}
         />
