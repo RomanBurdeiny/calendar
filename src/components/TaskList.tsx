@@ -107,7 +107,7 @@ const TaskList: React.FC<TaskListProps> = ({ theme, toggleTheme }) => {
   const isDark = theme === "dark";
 
   return (
-    <div className={`min-h-screen w-full flex flex-col items-center transition-colors duration-500 ${isDark ? 'bg-gray-800' : 'bg-gray-100'}`}>
+    <div className={`w-screen text-center m-auto min-h-screen  flex flex-col items-center transition-colors duration-500 ${isDark ? 'bg-gray-800' : 'bg-gray-100'}`}>
       <Header theme={theme} toggleTheme={toggleTheme} />
       <div className="max-w-screen-xl mx-auto px-4">
         <h1 className={`text-2xl font-bold mb-4 transition-colors duration-500 ${isDark ? 'text-white' : 'text-black'}`}>Task List</h1>

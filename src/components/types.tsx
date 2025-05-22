@@ -1,3 +1,6 @@
+import { SubmitHandler } from "react-hook-form";
+
+
 export interface TaskType {
   id: number;
   title: string;
@@ -42,7 +45,7 @@ export interface ToggleSwitchProps {
 }
 
 export interface ButtonProps {
-  onClick: () => void;
+  onClick?: () => void;
   children: React.ReactNode;
   className?: string;
   isDarkMode: boolean;
@@ -60,4 +63,19 @@ export interface TaskListProps {
 
 export default interface IUseInfiniteScroll {
   loaderRef: React.RefObject<HTMLDivElement>;
+}
+
+export interface LogInProps {
+
+}
+
+export interface SignUpProps {
+
+}
+
+export interface AuthFormProps {
+  onSubmit: SubmitHandler<IAuthForm>;
+  isDarkMode: boolean;
+  authTitle: string
+  authLink: string
 }
